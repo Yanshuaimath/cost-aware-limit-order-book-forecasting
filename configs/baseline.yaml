@@ -1,0 +1,6 @@
+model: baseline
+sequence_length: 100
+horizon: 50
+max_iter: 300
+class_weight: balanced
+seed: 42

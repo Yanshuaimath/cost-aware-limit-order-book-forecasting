@@ -1,0 +1,9 @@
+model: deeplob
+sequence_length: 100
+horizon: 50
+batch_size: 64
+epochs: 20
+learning_rate: 0.001
+weight_decay: 0.0001
+patience: 5
+seed: 42

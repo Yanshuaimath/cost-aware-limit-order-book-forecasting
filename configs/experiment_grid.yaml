@@ -1,0 +1,5 @@
+models: [baseline, deeplob, transformer]
+horizons: [10, 50]
+seeds: [11, 42, 73]
+sequence_length: 100
+notes: "Run standard FI-2010 labels first; add cost-aware labels only on raw executable data."

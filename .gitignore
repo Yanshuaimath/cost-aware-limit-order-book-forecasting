@@ -1,0 +1,30 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Generated experiment data
+outputs/
+data/raw/
+data/processed/
+
+# Large ML artifacts
+*.pt
+*.pth
+*.joblib
+*.npy
+*.npz
+
+# Local archives / caches
+*.tar
+*.tar.gz
+*.tgz
+.uv-cache/

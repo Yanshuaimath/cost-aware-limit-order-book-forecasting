@@ -1,0 +1,5 @@
+{
+  "best_epoch": 4,
+  "best_validation_loss": 0.5234394165950105,
+  "device": "cuda"
+}
