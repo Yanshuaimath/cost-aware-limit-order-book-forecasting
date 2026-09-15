@@ -57,15 +57,5 @@ rm -rf data/processed/btc_smoke
 ```
 
 The smoke command requires at least three UTC days in the first 200,000 rows.
-If it does not span three days, increase `--max-rows` or run the full command.
-
-Check whether the previous restart was caused by the Linux OOM killer:
-
-```bash
-dmesg -T | grep -Ei 'out of memory|oom|killed process' | tail -30
-free -h
-df -h .
-```
-
-The completed processed dataset requires approximately 1.5–2.0 GB of disk
+If it does not span three days, increase `--max-rows` or run the full command. The completed processed dataset requires approximately 1.5–2.0 GB of disk
 space, depending on row count and metadata outputs.
