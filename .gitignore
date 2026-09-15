@@ -28,3 +28,4 @@ data/processed/
 *.tar.gz
 *.tgz
 .uv-cache/
+/notebooks/test_notebooks.ipynb
