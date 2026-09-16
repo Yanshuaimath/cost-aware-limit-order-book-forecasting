@@ -29,3 +29,5 @@ data/processed/
 *.tgz
 .uv-cache/
 /notebooks/test_notebooks.ipynb
+/notebooks/08_kaggle_final_run_old.ipynb
+/notebooks/09_true_label_oracle_backtest.ipynb
