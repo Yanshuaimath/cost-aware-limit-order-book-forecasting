@@ -58,12 +58,24 @@ def train_torch_model(
     weight_decay: float,
     patience: int,
     device: torch.device,
+    balance_weights: bool = False,  # Added for balanced labels
 ) -> TrainResult:
     model.to(device)
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=learning_rate, weight_decay=weight_decay
     )
-    criterion = nn.CrossEntropyLoss()
+    if balance_weights:
+        # Compute class weights for unbalanced labels
+        labels = []
+        for _, y in train_loader:
+            labels.append(y)
+        labels = torch.cat(labels)
+        class_counts = torch.bincount(labels)
+        class_weights = 1.0 / (class_counts.float() + 1e-6)
+        class_weights /= class_weights.sum()
+        criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
+    else:
+        criterion = nn.CrossEntropyLoss()
     best_loss = float("inf")
     best_state = copy.deepcopy(model.state_dict())
     best_epoch = 0

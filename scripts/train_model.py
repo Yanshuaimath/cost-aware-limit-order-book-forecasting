@@ -52,6 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--xgb-subsample", type=float, default=0.8)
     parser.add_argument("--xgb-colsample-bytree", type=float, default=0.8)
     parser.add_argument("--xgb-n-jobs", type=int, default=-1)
+    parser.add_argument("--balance-weights", action="store_true", help="Use class-balanced weights for training")
     return parser.parse_args()
 
 
@@ -144,6 +145,7 @@ def main() -> None:
         weight_decay=args.weight_decay,
         patience=args.patience,
         device=device,
+        balance_weights=args.balance_weights
     )
     torch.save(
         {
