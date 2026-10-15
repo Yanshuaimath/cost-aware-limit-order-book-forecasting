@@ -6,17 +6,17 @@ The project asks a simple question:
 
 > Do better classification metrics on limit-order-book data translate into better executable trading performance after spread, fees, and slippage?
 
-The answer across the original and weighted-loss experiments was **no**. In the original run, DeepLOB and the Transformer achieved high raw accuracy largely by predicting the dominant no-trade class. Class-balanced weighted loss improved their directional discrimination, but all three models lost money after execution costs in the follow-up run.
+The answer across the unweighted and weighted runs was **no**. In the unweighted run, DeepLOB and the Transformer achieved high raw accuracy largely by predicting the dominant no-trade class. The weighted run achieved better directional discrimination, but all three models lost money after execution costs.
 
-![Original-run classification metrics (unweighted neural loss)](results/figures/classification_metrics.png)
+![Classification metrics for the unweighted run](results/figures/classification_metrics.png)
 
 ## Results
 
 Both runs used roughly 3.7M BTCUSDT perpetual LOB snapshots sampled at about 250 ms, ten book levels, 100-snapshot input windows (~25 s), and a 40-snapshot forecast horizon (~10 s). The out-of-sample test set contained 605,175 labeled events and was strongly imbalanced: 4.42% short/down, 90.57% flat, and 5.01% long/up.
 
-### Original run: unweighted neural loss
+### Unweighted run
 
-The original [Kaggle notebook](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb) used unweighted cross-entropy for DeepLOB and the Transformer. XGBoost used class-balanced sample weights.
+The [unweighted Kaggle notebook](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb) used unweighted cross-entropy for DeepLOB and the Transformer. XGBoost used class-balanced sample weights.
 
 | Model | Accuracy | Macro-F1 | Balanced accuracy | MCC | Net P&L | Return | Trades |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -26,33 +26,33 @@ The original [Kaggle notebook](notebooks/08_kaggle_deeplob_transformer_unweighte
 
 The Transformer result is **not evidence of profitability**: only six trades passed the fixed 0.50 confidence threshold. DeepLOB placed no trades. XGBoost produced many more directional signals, but its minority-class precision was only about 12–13%, and transaction costs overwhelmed the predictive edge.
 
-### Follow-up: class-balanced weighted neural loss
+### Weighted run
 
-The [weighted-loss Kaggle notebook](notebooks/09_kaggle_deeplob_transformer_weighted_loss.ipynb) enables `--balance-weights` for DeepLOB and the Transformer, applying inverse-frequency class weights to cross-entropy. It retains the same input windows, forecast horizon, neural training sample limits, five training epochs, and portfolio assumptions. XGBoost remains the class-balanced comparison model.
+The [weighted-loss Kaggle notebook](notebooks/09_kaggle_deeplob_transformer_weighted_loss.ipynb) enables `--balance-weights` for DeepLOB and the Transformer, applying inverse-frequency class weights to cross-entropy. It retains the same input windows, forecast horizon, neural training sample limits, and portfolio assumptions. The weighted run trains both neural models for **10 epochs**; validation loss selects epoch **7** for DeepLOB and epoch **6** for the Transformer. XGBoost remains the class-balanced comparison model.
 
-The notebook's saved evaluation and backtest outputs report:
+The weighted run's saved evaluation and backtest outputs report:
 
 | Model | Accuracy | Macro-F1 | Balanced accuracy | MCC | Net P&L | Return | Trades |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| XGBoost | 0.708 | **0.405** | **0.512** | **0.192** | -$12,978.51 | -12.98% | 5,642 |
-| DeepLOB | 0.626 | 0.372 | 0.511 | 0.169 | -$11,338.99 | -11.34% | 4,682 |
-| Transformer | 0.646 | 0.369 | 0.476 | 0.150 | -$9,669.95 | -9.67% | 3,819 |
+| XGBoost | 0.708 | **0.405** | 0.512 | **0.192** | -$12,978.51 | -12.98% | 5,642 |
+| DeepLOB | 0.662 | 0.390 | **0.521** | 0.190 | -$10,674.07 | -10.67% | 4,400 |
+| Transformer | 0.644 | 0.369 | 0.480 | 0.151 | -$10,501.34 | -10.50% | 4,131 |
 
-Weighting reduced majority-class collapse: DeepLOB's balanced accuracy rose from **0.334 to 0.511**, and the Transformer's from **0.335 to 0.476**. Both generated thousands of trades at the fixed 0.50 confidence threshold, but their signals still lost money after costs. Better imbalance-aware metrics did not translate into profitable execution.
+Compared with the unweighted run, DeepLOB's balanced accuracy rose from **0.334 to 0.521**, and the Transformer's from **0.335 to 0.480**. DeepLOB slightly exceeds XGBoost in balanced accuracy, while XGBoost retains the highest macro-F1 and MCC. Both neural models generated thousands of trades at the fixed 0.50 confidence threshold, but their signals still lost money after costs.
 
-The metrics, run configurations, and figures under [`results/`](results/) describe the **original run**. The weighted-loss results above come from the saved outputs in notebook `09`.
+The metrics, run configurations, and figures under [`results/`](results/) describe the **unweighted run**. The weighted-loss results above come from the saved outputs in notebook `09`.
 
 ## Why accuracy is misleading here
 
 The test set is about 90.6% flat. A model that almost always predicts flat can therefore report ~90% accuracy while having little directional value.
 
-The original DeepLOB and Transformer runs illustrate this failure mode:
+DeepLOB and the Transformer in the unweighted run illustrate this failure mode:
 
 - DeepLOB balanced accuracy: **0.334**
 - Transformer balanced accuracy: **0.335**
 - Three-class chance-level balanced accuracy: approximately **0.333**
 
-XGBoost reduced raw accuracy but improved balanced accuracy to **0.512** and MCC to **0.192**, showing substantially better directional discrimination than the original neural runs. The weighted-loss follow-up also improved neural balanced accuracy while lowering raw accuracy. In both experiments, classification improvement alone was not enough to overcome trading costs.
+XGBoost reduced raw accuracy but improved balanced accuracy to **0.512** and MCC to **0.192**, showing substantially better directional discrimination than the neural models in the unweighted run. The weighted run also improved neural balanced accuracy while lowering raw accuracy. In both experiments, classification improvement alone was not enough to overcome trading costs.
 
 ## Experiment design
 
@@ -90,7 +90,7 @@ The target assigns `short`, `flat`, or `long` after accounting for a 1.0 bp fee 
 
 ### Split
 
-The real-data experiment is chronological:
+Both runs use chronological splits:
 
 - first 8 days: training
 - next 2 days: validation
@@ -101,10 +101,10 @@ No random train/test shuffle is used. Sequence/forecast boundaries are handled b
 ### Models
 
 - **XGBoost** — engineered microstructure features plus window summaries; trained on the full training split with class-balanced sample weights.
-- **DeepLOB** — convolutional feature extraction, inception block, and LSTM; trained on 1,000,000 representative windows for five epochs.
-- **Transformer** — compact 2-layer, 4-head encoder with `d_model=64`; trained on 500,000 representative windows for five epochs.
+- **DeepLOB** — convolutional feature extraction, inception block, and LSTM; trained on 1,000,000 representative windows.
+- **Transformer** — compact 2-layer, 4-head encoder with `d_model=64`; trained on 500,000 representative windows.
 
-The neural subsampling was a compute choice; adjacent 100-snapshot windows overlap heavily. All models were evaluated on the full test period. The original neural runs used unweighted cross-entropy; the follow-up enabled class-balanced weighted cross-entropy with `--balance-weights`.
+The neural subsampling was a compute choice; adjacent 100-snapshot windows overlap heavily. All models were evaluated on the full test period. The unweighted run uses cross-entropy for five epochs; the weighted run uses class-balanced weighted cross-entropy with `--balance-weights` for ten epochs.
 
 ## Backtest assumptions
 
@@ -130,7 +130,7 @@ configs/                 Data/model configuration examples
 data/sample/             Small synthetic fixture for pipeline checks
 docs/                    Real-data and backtest documentation
 notebooks/               EDA, modeling, backtesting, and Kaggle run notebooks
-results/                 Lightweight original-run metrics and figures
+results/                 Metrics and figures from the unweighted run
 scripts/                 Reproducible CLI entry points
 src/lob_project/         Reusable Python package
 tests/                    Unit tests
@@ -183,11 +183,11 @@ uv run python scripts/evaluate_model.py \
   --processed-dir data/processed/synthetic_h50
 ```
 
-## Reproducing the BTC experiment
+## Reproducing the BTC runs
 
 ### 1. Obtain the data
 
-The final experiment used the public Kaggle dataset **Bitcoin Limit Order Book (LOB) Data**:
+Both runs use the public Kaggle dataset **Bitcoin Limit Order Book (LOB) Data**:
 
 https://www.kaggle.com/datasets/siavashraz/bitcoin-perpetualbtcusdtp-limit-order-book-data
 
@@ -215,7 +215,7 @@ uv run python scripts/prepare_btc_lob_low_memory.py \
 
 ### 3. Train the models
 
-These commands reproduce the original run with unweighted neural loss:
+These commands reproduce the unweighted run:
 
 XGBoost:
 
@@ -250,9 +250,9 @@ uv run python scripts/train_model.py \
   --batch-size 512
 ```
 
-GPU training is recommended for the neural models. The final runs used CUDA on Kaggle.
+GPU training is recommended for the neural models. Both runs used CUDA on Kaggle.
 
-For the weighted-loss follow-up, add `--balance-weights` to both neural training commands. Use separate output directories, such as `outputs/btc_h40_cost_weighted/deeplob` and `outputs/btc_h40_cost_weighted/transformer`, to preserve the original artifacts. The XGBoost command is unchanged.
+For the weighted run, add `--balance-weights` and change `--epochs 5` to `--epochs 10` in both neural training commands. Use separate output directories, such as `outputs/btc_h40_cost_weighted/deeplob` and `outputs/btc_h40_cost_weighted/transformer`, to preserve the unweighted run artifacts. The XGBoost command is unchanged.
 
 ### 4. Evaluate and backtest
 
@@ -279,8 +279,8 @@ For weighted models, point `--run-dir` in both commands to the corresponding wei
 
 The complete Kaggle workflows, including saved outputs, are available in:
 
-- [`08_kaggle_deeplob_transformer_unweighted_loss.ipynb`](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb): original run with unweighted neural loss.
-- [`09_kaggle_deeplob_transformer_weighted_loss.ipynb`](notebooks/09_kaggle_deeplob_transformer_weighted_loss.ipynb): follow-up with class-balanced weighted loss for DeepLOB and the Transformer.
+- [`08_kaggle_deeplob_transformer_unweighted_loss.ipynb`](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb): unweighted run for DeepLOB and the Transformer.
+- [`09_kaggle_deeplob_transformer_weighted_loss.ipynb`](notebooks/09_kaggle_deeplob_transformer_weighted_loss.ipynb): weighted run for DeepLOB and the Transformer.
 
 When switching between notebooks in the same Kaggle session, choose a fresh `OUTPUT_ROOT` for the weighted run: the notebooks reuse existing checkpoints when `FORCE_RETRAIN = False`.
 
@@ -291,7 +291,7 @@ The results should be interpreted as research experiments, not as evidence of a 
 - Only one short BTCUSDT market period is evaluated.
 - Both reported tables use one chronological train/validation/test split rather than a full walk-forward aggregate.
 - Neural models were trained on representative subsets due to compute constraints.
-- Class-balanced weighted loss improved neural directional discrimination in the follow-up, but neither neural model was profitable after costs. The comparison does not establish robustness across seeds or market periods.
+- The weighted run improved neural directional discrimination, but neither neural model was profitable after costs. It uses ten epochs compared with five in the unweighted run, so the comparison does not isolate the effect of loss weighting or establish robustness across seeds or market periods.
 - Backtesting assumes immediate top-of-book fills and ignores queue position, partial fills, market impact, and perpetual funding.
 - The confidence threshold was fixed at 0.50 for comparability rather than optimized for P&L.
 

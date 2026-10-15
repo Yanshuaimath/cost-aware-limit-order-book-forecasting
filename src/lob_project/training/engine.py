@@ -28,6 +28,7 @@ def _run_epoch(
     training = optimizer is not None
     model.train(training)
     total_loss = 0.0
+    total_loss_weight = 0.0
     correct = 0
     count = 0
     for x, y in loader:
@@ -43,10 +44,17 @@ def _run_epoch(
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
                 optimizer.step()
         batch = y.shape[0]
-        total_loss += float(loss.detach()) * batch
+        # Weighted mean cross-entropy divides by target weight, not batch size.
+        if isinstance(criterion, nn.CrossEntropyLoss) and criterion.weight is not None:
+            batch_loss_weight = float(criterion.weight[y].sum())
+        else:
+            batch_loss_weight = batch
+        total_loss += float(loss.detach()) * batch_loss_weight
+        total_loss_weight += batch_loss_weight
         correct += int((logits.argmax(dim=1) == y).sum())
         count += batch
-    return total_loss / max(count, 1), correct / max(count, 1)
+    mean_loss = total_loss / total_loss_weight if total_loss_weight > 0 else 0.0
+    return mean_loss, correct / max(count, 1)
 
 
 def train_torch_model(
