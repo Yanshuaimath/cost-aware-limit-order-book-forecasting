@@ -158,7 +158,7 @@ Run the tests:
 uv run pytest -q
 ```
 
-The published repository contains a small synthetic fixture, so core pipeline tests do not require the multi-gigabyte BTC dataset.
+The repository contains a small synthetic fixture, so core pipeline tests do not require the multi-gigabyte BTC dataset.
 
 ## Quick synthetic smoke test
 
@@ -282,8 +282,6 @@ The complete Kaggle workflows, including saved outputs, are available in:
 - [`08_kaggle_deeplob_transformer_unweighted_loss.ipynb`](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb): unweighted run for DeepLOB and the Transformer.
 - [`09_kaggle_deeplob_transformer_weighted_loss.ipynb`](notebooks/09_kaggle_deeplob_transformer_weighted_loss.ipynb): weighted run for DeepLOB and the Transformer.
 
-When switching between notebooks in the same Kaggle session, choose a fresh `OUTPUT_ROOT` for the weighted run: the notebooks reuse existing checkpoints when `FORCE_RETRAIN = False`.
-
 ## Limitations
 
 The results should be interpreted as research experiments, not as evidence of a deployable trading strategy.
@@ -291,7 +289,6 @@ The results should be interpreted as research experiments, not as evidence of a 
 - Only one short BTCUSDT market period is evaluated.
 - Both reported tables use one chronological train/validation/test split rather than a full walk-forward aggregate.
 - Neural models were trained on representative subsets due to compute constraints.
-- The weighted run improved neural directional discrimination, but neither neural model was profitable after costs. It uses ten epochs compared with five in the unweighted run, so the comparison does not isolate the effect of loss weighting or establish robustness across seeds or market periods.
 - Backtesting assumes immediate top-of-book fills and ignores queue position, partial fills, market impact, and perpetual funding.
 - The confidence threshold was fixed at 0.50 for comparability rather than optimized for P&L.
 
