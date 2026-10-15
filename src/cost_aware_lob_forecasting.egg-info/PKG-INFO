@@ -283,7 +283,7 @@ uv run python scripts/run_portfolio_backtest.py \
 
 Replace `MODEL` with `xgboost`, `deeplob`, or `transformer`.
 
-For the exact Kaggle workflow used for the final neural runs, see [`notebooks/08_kaggle_final_run.ipynb`](notebooks/08_kaggle_final_run.ipynb).
+For the exact Kaggle workflow used for the final neural runs, see [`notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb`](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb).
 
 ## Limitations
 

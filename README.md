@@ -16,7 +16,7 @@ Both runs used roughly 3.7M BTCUSDT perpetual LOB snapshots sampled at about 250
 
 ### Original run: unweighted neural loss
 
-The original [Kaggle notebook](notebooks/08_kaggle_final_run.ipynb) used unweighted cross-entropy for DeepLOB and the Transformer. XGBoost used class-balanced sample weights.
+The original [Kaggle notebook](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb) used unweighted cross-entropy for DeepLOB and the Transformer. XGBoost used class-balanced sample weights.
 
 | Model | Accuracy | Macro-F1 | Balanced accuracy | MCC | Net P&L | Return | Trades |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -279,7 +279,7 @@ For weighted models, point `--run-dir` in both commands to the corresponding wei
 
 The complete Kaggle workflows, including saved outputs, are available in:
 
-- [`08_kaggle_final_run.ipynb`](notebooks/08_kaggle_final_run.ipynb): original run with unweighted neural loss.
+- [`08_kaggle_deeplob_transformer_unweighted_loss.ipynb`](notebooks/08_kaggle_deeplob_transformer_unweighted_loss.ipynb): original run with unweighted neural loss.
 - [`09_kaggle_deeplob_transformer_weighted_loss.ipynb`](notebooks/09_kaggle_deeplob_transformer_weighted_loss.ipynb): follow-up with class-balanced weighted loss for DeepLOB and the Transformer.
 
 When switching between notebooks in the same Kaggle session, choose a fresh `OUTPUT_ROOT` for the weighted run: the notebooks reuse existing checkpoints when `FORCE_RETRAIN = False`.
